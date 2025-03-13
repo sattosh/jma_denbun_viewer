@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>気象庁電文ビューア</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>気象庁電文ビューア</h1>
+    <div id="drop-area">ここにファイルをドラッグ＆ドロップしてください</div>
+    <button id="toggle-format" style="display: none">JSON表示に切替</button>
+    <button id="download-btn" style="display: none">ダウンロード</button>
+    <pre id="output"></pre>
+    <!-- pako ライブラリ（GZIP解凍用） -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
