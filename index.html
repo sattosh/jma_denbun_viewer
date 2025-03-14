@@ -4,15 +4,18 @@
     <meta charset="UTF-8" />
     <title>気象庁電文ビューア</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css" />
   </head>
   <body>
     <h1>気象庁電文ビューア</h1>
     <div id="drop-area">ここにファイルをドラッグ＆ドロップしてください</div>
     <button id="toggle-format" style="display: none">JSON表示に切替</button>
     <button id="download-btn" style="display: none">ダウンロード</button>
-    <pre id="output"></pre>
+    <pre id="output"><code id="code-output" class="language-xml"></code></pre>
     <!-- pako ライブラリ（GZIP解凍用） -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <script src="./vkbeautify.0.99.00.beta.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

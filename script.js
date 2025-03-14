@@ -2,6 +2,7 @@
 document.addEventListener('DOMContentLoaded', function () {
   const dropArea = document.getElementById('drop-area');
   const output = document.getElementById('output');
+  const codeOutput = document.getElementById('code-output');
   const toggleFormatBtn = document.getElementById('toggle-format');
   const downloadBtn = document.getElementById('download-btn');
   let currentXML = '';
@@ -40,17 +41,20 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
           // GZIP 解凍（pako ライブラリ使用）
           const decompressed = pako.ungzip(gzipData, { to: 'string' });
-          currentXML = decompressed;
-          output.textContent = currentXML;
+          // XML の整形 (vkbeautifyを使用)
+          currentXML = vkbeautify.xml(decompressed, 2);
+          codeOutput.textContent = currentXML;
+          hljs.highlightElement(codeOutput);
+
           toggleFormatBtn.style.display = 'inline-block';
           toggleFormatBtn.textContent = 'JSON表示に切替';
 
           downloadBtn.style.display = 'inline-block';
           xmlDisplayed = true;
-          // XML → JSON へ変換（事前に変換結果を生成）
+          // XML → JSON へ変換（事前に整形済みのXMLから変換）
           currentJSON = xmlToJson(currentXML);
         } catch (err) {
-          output.textContent = '解凍エラー: ' + err;
+          codeOutput.textContent = '解凍エラー: ' + err;
         }
       };
       reader.readAsArrayBuffer(file);
@@ -59,14 +63,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
   toggleFormatBtn.addEventListener('click', () => {
     if (xmlDisplayed) {
-      output.textContent = JSON.stringify(currentJSON, null, 2);
+      codeOutput.textContent = JSON.stringify(currentJSON, null, 2);
+      codeOutput.className = 'language-json';
       toggleFormatBtn.textContent = 'XML表示に切替';
       xmlDisplayed = false;
     } else {
-      output.textContent = currentXML;
+      codeOutput.textContent = currentXML;
+      codeOutput.className = 'language-xml';
       toggleFormatBtn.textContent = 'JSON表示に切替';
       xmlDisplayed = true;
     }
+    hljs.highlightElement(codeOutput);
   });
   downloadBtn.addEventListener('click', () => {
     const contentToDownload = xmlDisplayed ? currentXML : JSON.stringify(currentJSON, null, 2);
@@ -98,7 +105,6 @@ function xmlToJson(xmlStr) {
         if (!obj[node.nodeName]) {
           obj[node.nodeName] = {};
         }
-        // 属性の処理
         if (node.attributes && node.attributes.length > 0) {
           obj[node.nodeName]['@attributes'] = {};
           for (let i = 0; i < node.attributes.length; i++) {
@@ -106,9 +112,7 @@ function xmlToJson(xmlStr) {
             obj[node.nodeName]['@attributes'][attribute.nodeName] = attribute.nodeValue;
           }
         }
-        // 子ノードの処理
         if (node.childNodes.length === 1 && node.childNodes[0].nodeType === 3) {
-          // テキストノードの場合
           obj[node.nodeName] = node.childNodes[0].nodeValue;
         } else {
           for (let i = 0; i < node.childNodes.length; i++) {
@@ -134,4 +138,23 @@ function xmlToJson(xmlStr) {
   } catch (e) {
     return { error: e.message };
   }
+}
+
+// XMLを整形する関数
+function formatXML(xml) {
+  // 改行とインデントを付加して整形する簡易フォーマッタ
+  let formatted = '';
+  let reg = /(>)(<)(\/*)/g;
+  xml = xml.replace(reg, '$1\r\n$2$3');
+  let pad = 0;
+  xml.split('\r\n').forEach((node) => {
+    if (node.match(/^<\/\w/)) {
+      if (pad > 0) pad--;
+    }
+    formatted += '  '.repeat(pad) + node + '\r\n';
+    if (node.match(/^<\w([^>]*[^\/])?>.*$/)) {
+      pad++;
+    }
+  });
+  return formatted;
 }
